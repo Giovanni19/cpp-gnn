@@ -1,5 +1,6 @@
 #include "Graph.hpp"
 #include <algorithm>
+#include <stdexcept>
 void Graph::add_node(const Node& node)
 {
     nodes.push_back(node);
@@ -49,4 +50,22 @@ std::vector<int> Graph::neighbors(int node_id) const
     }
 
     return result;
+}
+
+const Node& Graph::get_node(int node_id) const
+{
+    for (const Node& node : nodes)
+    {
+        if (node.id == node_id)
+        {
+            return node;
+        }
+    }
+
+    throw std::out_of_range("Node ID not found");
+}
+
+const std::vector<Edge>& Graph::get_edges() const
+{
+    return edges;
 }
