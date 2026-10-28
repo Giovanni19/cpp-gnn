@@ -38,7 +38,19 @@ std::vector<std::vector<double>> MessagePassing::update_edges(
 {
     std::vector<std::vector<double>> updated_edges;
 
-    // ...
+    for (const Edge& edge : graph.get_edges())
+    {
+        const Node& source = graph.get_node(edge.source);
+        const Node& target = graph.get_node(edge.target);
+
+        std::vector<double> edge_input = concatenate(
+            source.features,
+            target.features,
+            edge.features
+        );
+        std::vector<double> updated_features = edge_mlp.forward(edge_input);
+        updated_edges.push_back(updated_features);
+    }
     
     return updated_edges;
 }

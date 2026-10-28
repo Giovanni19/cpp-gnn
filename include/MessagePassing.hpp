@@ -1,5 +1,5 @@
 #pragma once
-#include "VectorUtils.hpp"
+
 #include "Graph.hpp"
 #include "MLP.hpp"
 
