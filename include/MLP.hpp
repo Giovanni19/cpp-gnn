@@ -16,4 +16,7 @@ public:
     std::vector<double> forward(
         const std::vector<double>& input
     ) const;
+
+    std::vector<double> backward(const std::vector<double>& grad_output);
+    void step(double learning_rate);
 };

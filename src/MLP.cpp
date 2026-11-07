@@ -20,3 +20,22 @@ std::vector<double> MLP::forward(
 
     return output;
 }
+
+std::vector<double> MLP::backward(const std::vector<double>& grad_output)
+{
+    std::vector<double> grad = grad_output;
+
+    for (auto it = layers.rbegin(); it != layers.rend(); ++it)
+    {
+        grad = (*it)->backward(grad);
+    }
+    return grad;
+}
+
+void MLP::step(double learning_rate)
+{
+    for (auto& layer : layers)
+    {
+        layer->step(learning_rate);
+    }
+}

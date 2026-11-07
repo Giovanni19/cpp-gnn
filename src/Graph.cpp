@@ -65,6 +65,11 @@ const Node& Graph::get_node(int node_id) const
     throw std::out_of_range("Node ID not found");
 }
 
+const std::vector<Node>& Graph::get_nodes() const
+{
+    return nodes;
+}
+
 const std::vector<Edge>& Graph::get_edges() const
 {
     return edges;

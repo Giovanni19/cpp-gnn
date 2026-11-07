@@ -10,6 +10,8 @@ add_library(cpp_gnn
     src/Linear.cpp
     src/ReLU.cpp
     src/MLP.cpp
+    src/VectorUtils.cpp
+    src/MessagePassing.cpp
 )
 
 target_include_directories(cpp_gnn
@@ -17,20 +19,7 @@ target_include_directories(cpp_gnn
         ${PROJECT_SOURCE_DIR}/include
 )
 
-add_executable(test_relu
-    examples/test_relu.cpp
-)
-
-target_link_libraries(test_relu
-    PRIVATE
-        cpp_gnn
-)
-
-add_executable(test_mlp
-    examples/test_mlp.cpp
-)
-
-target_link_libraries(test_mlp
-    PRIVATE
-        cpp_gnn
-)
+foreach(example test_relu test_mlp test_node test_message_passing test_seed test_train test_train_gnn)
+    add_executable(${example} examples/${example}.cpp)
+    target_link_libraries(${example} PRIVATE cpp_gnn)
+endforeach()

@@ -16,5 +16,6 @@ class Graph{
     std::size_t num_edges() const;
     std::vector<int> neighbors(int node_id) const;
     const Node& get_node(int node_id) const;
+    const std::vector<Node>& get_nodes() const;
     const std::vector<Edge>& get_edges() const;
 };
