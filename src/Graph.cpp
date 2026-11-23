@@ -74,3 +74,17 @@ const std::vector<Edge>& Graph::get_edges() const
 {
     return edges;
 }
+
+Graph Graph::with_node_features(const std::vector<std::vector<double>>& features) const
+{
+    if (features.size() != nodes.size())
+    {
+        throw std::invalid_argument("Wrong number of node feature vectors");
+    }
+    Graph result = *this;
+    for (std::size_t i = 0; i < nodes.size(); ++i)
+    {
+        result.nodes[i].features = features[i];
+    }
+    return result;
+}

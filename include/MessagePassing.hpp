@@ -12,9 +12,10 @@ private:
     MLP edge_mlp;
     MLP node_mlp;
     std::size_t node_dimension;
-    std::size_t edge_dimension;
+    std::size_t message_dimension;
+    bool use_mean;   // media invece di somma dei messaggi entranti
 
-    // Somma dei messaggi entranti per ogni nodo (stesso ordine di graph.get_nodes()).
+    // Somma (o media) dei messaggi entranti per ogni nodo (stesso ordine di graph.get_nodes()).
     std::vector<std::vector<double>> aggregate(
         const Graph& graph,
         const std::vector<std::vector<double>>& edge_messages
@@ -23,9 +24,11 @@ private:
 public:
     MessagePassing(
         std::size_t node_dimension,
-        std::size_t edge_dimension,
+        std::size_t edge_dimension,      // feature in ingresso degli archi (anche 0)
+        std::size_t message_dimension,   // dimensione dei messaggi prodotti da edge_mlp
         std::size_t hidden_dimension,
-        unsigned seed = std::random_device{}()
+        unsigned seed = std::random_device{}(),
+        bool use_mean = false
     );
     std::vector<std::vector<double>> update_edges(
         const Graph& graph

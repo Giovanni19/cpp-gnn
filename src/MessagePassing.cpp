@@ -2,12 +2,27 @@
 #include "Linear.hpp"
 #include "ReLU.hpp"
 #include "VectorUtils.hpp"
+#include <algorithm>
 #include <memory>
 #include <unordered_map>
 
 namespace
 {
 // id del nodo -> posizione in graph.get_nodes()
+std::unordered_map<int, std::size_t> node_index(const Graph& graph);
+
+// numero di archi entranti per ogni nodo (stesso ordine di graph.get_nodes())
+std::vector<double> in_degree(const Graph& graph)
+{
+    auto index = node_index(graph);
+    std::vector<double> degree(graph.num_nodes(), 0.0);
+    for (const Edge& edge : graph.get_edges())
+    {
+        degree[index.at(edge.target)] += 1.0;
+    }
+    return degree;
+}
+
 std::unordered_map<int, std::size_t> node_index(const Graph& graph)
 {
     std::unordered_map<int, std::size_t> index;
@@ -23,12 +38,14 @@ std::unordered_map<int, std::size_t> node_index(const Graph& graph)
 MessagePassing::MessagePassing(
     std::size_t node_dimension,
     std::size_t edge_dimension,
+    std::size_t message_dimension,
     std::size_t hidden_dimension,
-    unsigned seed
+    unsigned seed,
+    bool use_mean
 )
-    : node_dimension(node_dimension), edge_dimension(edge_dimension)
+    : node_dimension(node_dimension), message_dimension(message_dimension), use_mean(use_mean)
 {
-    node_mlp.add_layer(std::make_unique<Linear>(node_dimension + edge_dimension, hidden_dimension, seed + 0));
+    node_mlp.add_layer(std::make_unique<Linear>(node_dimension + message_dimension, hidden_dimension, seed + 0));
     node_mlp.add_layer(std::make_unique<ReLU>());
     node_mlp.add_layer(std::make_unique<Linear>(hidden_dimension, node_dimension, seed + 1));
 
@@ -50,7 +67,7 @@ MessagePassing::MessagePassing(
     edge_mlp.add_layer(
         std::make_unique<Linear>(
             hidden_dimension,
-            edge_dimension,
+            message_dimension,
             seed + 3
         )
     );
@@ -107,14 +124,26 @@ std::vector<std::vector<double>> MessagePassing::aggregate(
 {
     auto index = node_index(graph);
     const auto& edges = graph.get_edges();
-    std::vector<std::vector<double>> sums(graph.num_nodes(), std::vector<double>(edge_dimension, 0.0));
+    std::vector<std::vector<double>> sums(graph.num_nodes(), std::vector<double>(message_dimension, 0.0));
 
     for (std::size_t e = 0; e < edges.size(); ++e)
     {
         auto& sum = sums[index.at(edges[e].target)];
-        for (std::size_t k = 0; k < edge_dimension; ++k)
+        for (std::size_t k = 0; k < message_dimension; ++k)
         {
             sum[k] += edge_messages[e][k];
+        }
+    }
+
+    if (use_mean)
+    {
+        auto degree = in_degree(graph);
+        for (std::size_t i = 0; i < sums.size(); ++i)
+        {
+            for (double& value : sums[i])
+            {
+                value /= std::max(degree[i], 1.0);
+            }
         }
     }
     return sums;
@@ -148,7 +177,19 @@ std::vector<std::vector<double>> MessagePassing::backward(
         grad_sums[i].assign(g.begin() + node_dimension, g.end());
     }
 
-    // edge_mlp: la somma passa lo stesso gradiente a ogni messaggio entrante
+    if (use_mean)
+    {
+        auto degree = in_degree(graph);
+        for (std::size_t i = 0; i < nodes.size(); ++i)
+        {
+            for (double& value : grad_sums[i])
+            {
+                value /= std::max(degree[i], 1.0);
+            }
+        }
+    }
+
+    // edge_mlp: la somma passa lo stesso gradiente a ogni messaggio entrante (diviso per il grado se media)
     for (const Edge& edge : edges)
     {
         std::size_t s = index.at(edge.source);

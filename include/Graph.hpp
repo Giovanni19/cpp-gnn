@@ -18,4 +18,7 @@ class Graph{
     const Node& get_node(int node_id) const;
     const std::vector<Node>& get_nodes() const;
     const std::vector<Edge>& get_edges() const;
+
+    // Copia del grafo con nuove feature dei nodi (stesso ordine di get_nodes()).
+    Graph with_node_features(const std::vector<std::vector<double>>& features) const;
 };

@@ -11,10 +11,10 @@ int main()
     graph.add_node(Node(1, {0.0, 1.0}));
     graph.add_node(Node(2, {0.5, -0.5}));
     graph.add_node(Node(3, {-1.0, 0.5}));
-    graph.add_edge(Edge(0, 1, {1.0, 1.0}));
-    graph.add_edge(Edge(2, 1, {1.0, 1.0}));
-    graph.add_edge(Edge(1, 3, {1.0, 1.0}));
-    graph.add_edge(Edge(3, 0, {1.0, 1.0}));
+    graph.add_edge(Edge(0, 1, {1.0}));
+    graph.add_edge(Edge(2, 1, {1.0}));
+    graph.add_edge(Edge(1, 3, {1.0}));
+    graph.add_edge(Edge(3, 0, {1.0}));
 
     std::vector<std::vector<double>> targets(graph.num_nodes(), {0.0, 0.0});
     for (const Edge& e : graph.get_edges())
@@ -25,7 +25,7 @@ int main()
         }
     }
 
-    MessagePassing mp(2, 2, 16, 42);
+    MessagePassing mp(2, 1, 4, 16, 42);
     double loss = 0.0;
 
     for (int epoch = 0; epoch <= 2000; ++epoch)

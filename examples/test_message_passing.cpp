@@ -11,7 +11,7 @@ int main()
     graph.add_edge(Edge(0, 1, {1.0}));
     graph.add_edge(Edge(1, 2, {2.0}));
 
-    MessagePassing mp(2, 1, 8);
+    MessagePassing mp(2, 1, 4, 8);
 
     auto messages = mp.update_edges(graph);
     auto nodes = mp.update_nodes(graph, messages);
